@@ -1,0 +1,131 @@
+﻿@model List<Transaction>
+@{
+    int count = 1;
+}
+<!-- Head section with a link to your external stylesheet -->
+<head>
+    <link rel="stylesheet" type="text/css" href="/css/Styles.css">
+</head>
+
+<!-- Body section -->
+@if (Context.User.Identity.IsAuthenticated)
+{
+    <br />
+    <h3>Welcome @User.Identity.Name!</h3>
+    <br />
+    <a asp-controller="Login" asp-action="Logout">Log out</a>
+}
+<body>
+    <div class="container">
+        
+        <h2>Filter Transactions by Date Range</h2>
+
+        <form method="Get" action="@Url.Action("Ledger", "Home")">
+            
+
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" name="dates[0]">
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" name="dates[1]">
+            <br />
+
+            <button type="submit">Filter Transactions</button>
+        </form> 
+
+
+        <h1>Transaction Ledger</h1>
+
+        <table class="transaction-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Service Name</th>
+                    <th>Appointment Date</th>
+                    <th>Service Price</th>
+                    <th>Tip Amount</th>
+                    <th>Transaction Id</th>
+                    <th>Delete Transaction</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null)
+                {
+                    foreach (Transaction b in Model)
+                    {
+                        <tr>
+                            <td>@count</td>
+                            <td>@b.ServiceName</td>
+                            <td>@b.AppointmentDate</td>
+                            <td>@b.ServicePrice</td>
+                            <td>@b.TipAmount</td>
+                            <td>@b.Id</td>
+                            <td>
+                                <form method="post" action="@Url.Action("DeleteTransaction", "Home")">
+                                    <input type="hidden" name="id" value="@b.Id" />
+                                    <button type="submit" class="delete-button">Delete</button>
+                                </form>
+                            </td>
+                            @* <td><button class="delete-button" formmethod="delete" action="@Url.Action("DeleteTransaction", "Home")">Delete</button></td> *@
+                        </tr>
+                        count++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6">No transactions available</td>
+                    </tr>
+                }
+            </tbody>
+                
+        </table>
+
+
+        @if(Model != null)
+        {
+            decimal totalServiceRevenue = 0;
+            decimal totalTipRevenue = 0;
+            decimal totalRevenue = 0;
+            foreach(Transaction b in Model)
+            {
+                                    
+                totalTipRevenue += b.TipAmount;
+                totalServiceRevenue += b.ServicePrice;
+            }
+            totalRevenue = totalServiceRevenue + totalTipRevenue;
+            <table class="transaction-table">
+                    <thead>
+                    <tr>
+                        <th>Total Service Revenue</th>
+                        <th>Total Tip Revenue</th>
+                        <th>Total Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <td>@totalServiceRevenue</td>
+                    <td>@totalTipRevenue</td>
+                    <td>@totalRevenue</td>
+                    </Tbody>
+        </table>
+        }
+
+        <h2>Add New Transaction</h2>
+        <form method="post" action="@Url.Action("NewTransaction", "Home")" class="add-transaction-form">
+
+                <label for="newServiceName">Service Name:</label> <br />
+                <input type="text" id="ServiceName" name="ServiceName" required>
+                <br /><br />
+                <label for="newAppointmentDate">Appointment Date:</label><br />
+                <input type="datetime-local" id="AppointmentDate" name="AppointmentDate" required>
+                <br /><br />
+                <label for="newServicePrice">Service Price:</label><br />
+                <input type="number" step="0.01" id="ServicePrice" name="ServicePrice" required>
+                <br /><br />
+                <label for="newTipAmount">Tip Amount:</label><br />
+                <input type="number" step="0.01" id="TipAmount" name="TipAmount" required>
+                <br />
+                <button type="submit">Add Transaction</button>
+           
+        </form>
+    </div>
+</body>
